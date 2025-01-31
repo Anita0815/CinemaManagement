@@ -1,84 +1,71 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const port = 3000;
 
-// Middleware to serve static files
-app.use(express.static('public'));
-
-// Body parser middleware to handle form data
+// Middleware: Body parser to handle form data
 app.use(express.urlencoded({ extended: true }));
 
-// In-memory database (just an array for simplicity)
+// Middleware: Serve static files (CSS, JS, images, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Set EJS as the templating engine
+app.set('view engine', 'ejs');
+
+// Sample in-memory database
 let movies = [
   { id: 1, title: 'Movie 1', genre: 'Action' },
   { id: 2, title: 'Movie 2', genre: 'Comedy' },
 ];
 
-// Homepage route (Cinema Management homepage)
+// Homepage Route
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.render('index', { title: 'Cinema Management' });
 });
 
 // View Movies Route
 app.get('/movies', (req, res) => {
-  let movieList = movies.map(movie => `
-    <li>
-      ${movie.title} (${movie.genre}) 
-      - <a href="/movies/edit/${movie.id}">Edit</a> | 
-      <a href="/movies/delete/${movie.id}">Delete</a>
-    </li>
-  `).join('');
-  
-  res.send(`
-    <h2>Movies List</h2>
-    <ul>${movieList}</ul>
-    <a href="/">Back to Homepage</a>
-    <a href="/movies/add">Add New Movie</a>
-  `);
+  res.render('movies', { movies });
 });
 
-// Add Movie Route (GET to show form)
+// Add Movie Route (GET: Show form)
 app.get('/movies/add', (req, res) => {
-  res.sendFile(__dirname + '/public/add_movie.html');
+  res.render('add-movie');
 });
 
-// Add Movie Route (POST to handle form submission)
+// Add Movie Route (POST: Handle form submission)
 app.post('/movies/add', (req, res) => {
   const { title, genre } = req.body;
+  if (!title || !genre) {
+    return res.status(400).send('Title and Genre are required.');
+  }
+  
   const newMovie = {
     id: movies.length + 1,
-    title: title,
-    genre: genre
+    title,
+    genre,
   };
+
   movies.push(newMovie);
   res.redirect('/movies');
 });
 
-// Edit Movie Route (GET to show form)
+// Edit Movie Route (GET: Show form)
 app.get('/movies/edit/:id', (req, res) => {
   const movie = movies.find(m => m.id === parseInt(req.params.id));
   if (!movie) return res.status(404).send('Movie not found');
   
-  res.send(`
-    <h2>Edit Movie</h2>
-    <form action="/movies/edit/${movie.id}" method="POST">
-      <label for="title">Title: </label>
-      <input type="text" name="title" id="title" value="${movie.title}" required><br>
-      <label for="genre">Genre: </label>
-      <input type="text" name="genre" id="genre" value="${movie.genre}" required><br><br>
-      <button type="submit">Save Changes</button>
-    </form>
-    <a href="/movies">Back to Movies</a>
-  `);
+  res.render('edit-movie', { movie });
 });
 
-// Edit Movie Route (POST to handle form submission)
+// Edit Movie Route (POST: Handle update)
 app.post('/movies/edit/:id', (req, res) => {
   const movie = movies.find(m => m.id === parseInt(req.params.id));
   if (!movie) return res.status(404).send('Movie not found');
-  
+
   movie.title = req.body.title;
   movie.genre = req.body.genre;
+
   res.redirect('/movies');
 });
 
