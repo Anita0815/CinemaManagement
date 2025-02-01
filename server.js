@@ -7,8 +7,7 @@ const port = 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Body parser middleware to handle form data
-app.use(express.urlencoded({ extended: true })); this is my server.js help me change it
- 
+app.use(express.urlencoded({ extended: true }));
 
 // Set view engine to EJS
 app.set('view engine', 'ejs');
@@ -80,6 +79,8 @@ app.get('/health', (req, res) => {
 });
 
 // Start the server
-app.listen(3000, '0.0.0.0', () => {
-  console.log('Server is running at http://0.0.0.0:3000');
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server is running at http://localhost:${port}`);
 });
+
+
