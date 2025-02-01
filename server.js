@@ -73,14 +73,7 @@ app.get('/movies/delete/:id', (req, res) => {
   res.redirect('/movies');
 });
 
-// Health Check Route
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
 // Start the server
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
-
-
