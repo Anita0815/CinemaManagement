@@ -1,7 +1,7 @@
 const express = require('express');
-const { Sequelize } = require('sequelize');  // Import Sequelize
+const { Sequelize } = require('sequelize');  
 const path = require('path');
-const dbConfig = require('./app/config/db.config');  // Adjust the path to your db.config.js file
+const dbConfig = require('./app/config/db.config');  
 const app = express();
 const port = 3000;
 
