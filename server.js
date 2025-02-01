@@ -1,125 +1,77 @@
 const express = require('express');
-const { Sequelize, DataTypes } = require('sequelize');  
-const path = require('path');
-const dbConfig = require('./app/config/db.config');  
-
 const app = express();
+const path = require('path');
 const port = 3000;
 
 // Middleware to serve static files (like CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Body parser middleware to handle form data
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); this is my server.js help me change it
+ 
 
 // Set view engine to EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Initialize Sequelize connection
-const sequelize = new Sequelize(
-  dbConfig.DB, 
-  dbConfig.USER, 
-  dbConfig.PASSWORD, {
-    host: dbConfig.HOST,
-    dialect: dbConfig.dialect,
-    port: dbConfig.PORT,
-    logging: false // Disable logging for cleaner output
-  }
-);
+// In-memory database (just an array for simplicity)
+let movies = [
+  { id: 1, title: 'Movie 1', genre: 'Action' },
+  { id: 2, title: 'Movie 2', genre: 'Comedy' },
+];
 
-// Test the database connection
-sequelize.authenticate()
-  .then(() => console.log('✅ Database connected!'))
-  .catch((error) => console.error('❌ Unable to connect to the database:', error));
-
-// Define a Movie model
-const Movie = sequelize.define('Movie', {
-  title: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  genre: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  }
-}, {
-  timestamps: false
-});
-
-// Sync the model with the database
-sequelize.sync()
-  .then(() => console.log('✅ Movie table synchronized.'))
-  .catch((error) => console.error('❌ Error syncing the Movie model:', error));
-
-// Homepage route
+// Homepage route (Cinema Management homepage)
 app.get('/', (req, res) => {
   res.render('index', { title: 'Cinema Management' });
 });
 
 // View Movies Route
-app.get('/movies', async (req, res) => {
-  try {
-    const movies = await Movie.findAll();
-    res.render('movies', { movies });
-  } catch (error) {
-    res.status(500).send('Error retrieving movies: ' + error);
-  }
+app.get('/movies', (req, res) => {
+  res.render('movies', { movies });
 });
 
-// Add Movie Route (GET)
+// Add Movie Route (GET to show form)
 app.get('/movies/add', (req, res) => {
   res.render('addMovie');
 });
 
-// Add Movie Route (POST)
-app.post('/movies/add', async (req, res) => {
-  try {
-    await Movie.create({ title: req.body.title, genre: req.body.genre });
-    res.redirect('/movies');
-  } catch (error) {
-    res.status(500).send('Error adding movie: ' + error);
-  }
+// Add Movie Route (POST to handle form submission)
+app.post('/movies/add', (req, res) => {
+  const { title, genre } = req.body;
+  const newMovie = {
+    id: movies.length + 1,
+    title: title,
+    genre: genre
+  };
+  movies.push(newMovie);
+  res.redirect('/movies');
 });
 
-// Edit Movie Route (GET)
-app.get('/movies/edit/:id', async (req, res) => {
-  try {
-    const movie = await Movie.findByPk(req.params.id);
-    if (!movie) return res.status(404).send('Movie not found');
-    res.render('editMovie', { movie });
-  } catch (error) {
-    res.status(500).send('Error fetching movie: ' + error);
-  }
+// Edit Movie Route (GET to show form)
+app.get('/movies/edit/:id', (req, res) => {
+  const movie = movies.find(m => m.id === parseInt(req.params.id));
+  if (!movie) return res.status(404).send('Movie not found');
+  res.render('editMovie', { movie });
 });
 
-// Edit Movie Route (POST)
-app.post('/movies/edit/:id', async (req, res) => {
-  try {
-    const movie = await Movie.findByPk(req.params.id);
-    if (!movie) return res.status(404).send('Movie not found');
+// Edit Movie Route (POST to handle form submission)
+app.post('/movies/edit/:id', (req, res) => {
+  const movie = movies.find(m => m.id === parseInt(req.params.id));
+  if (!movie) return res.status(404).send('Movie not found');
 
-    movie.title = req.body.title;
-    movie.genre = req.body.genre;
-    await movie.save();
+  movie.title = req.body.title;
+  movie.genre = req.body.genre;
 
-    res.redirect('/movies');
-  } catch (error) {
-    res.status(500).send('Error updating movie: ' + error);
-  }
+  res.redirect('/movies');
 });
 
 // Delete Movie Route
-app.get('/movies/delete/:id', async (req, res) => {
-  try {
-    const movie = await Movie.findByPk(req.params.id);
-    if (!movie) return res.status(404).send('Movie not found');
-    
-    await movie.destroy();
-    res.redirect('/movies');
-  } catch (error) {
-    res.status(500).send('Error deleting movie: ' + error);
-  }
+app.get('/movies/delete/:id', (req, res) => {
+  const movieIndex = movies.findIndex(m => m.id === parseInt(req.params.id));
+  if (movieIndex === -1) return res.status(404).send('Movie not found');
+
+  movies.splice(movieIndex, 1);
+  res.redirect('/movies');
 });
 
 // Health Check Route
@@ -128,6 +80,6 @@ app.get('/health', (req, res) => {
 });
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 Server is running at http://0.0.0.0:${port}`);
+app.listen(3000, '0.0.0.0', () => {
+  console.log('Server is running at http://0.0.0.0:3000');
 });
