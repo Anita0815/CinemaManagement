@@ -1,17 +1,9 @@
 const express = require('express');
 const app = express();
-const path = require('path');
 const port = 3000;
-
-// Middleware to serve static files (like CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Body parser middleware to handle form data
 app.use(express.urlencoded({ extended: true }));
-
-// Set view engine to EJS
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
 
 // In-memory database (just an array for simplicity)
 let movies = [
@@ -21,17 +13,45 @@ let movies = [
 
 // Homepage route (Cinema Management homepage)
 app.get('/', (req, res) => {
-  res.render('index', { title: 'Cinema Management' });
+  res.send(`
+    <h1>Welcome to My Cinema Management Website!</h1>
+    <p>This is a simple website powered by Node.js and Express.</p>
+    <a href="/movies">View Movies</a><br>
+    <a href="/movies/add">Add New Movie</a>
+  `);
 });
 
 // View Movies Route
 app.get('/movies', (req, res) => {
-  res.render('movies', { movies });
+  let movieList = movies.map(movie => `
+    <li>
+      ${movie.title} (${movie.genre}) 
+      - <a href="/movies/edit/${movie.id}">Edit</a> | 
+      <a href="/movies/delete/${movie.id}">Delete</a>
+    </li>
+  `).join('');
+  res.send(`
+    <h2>Movies List</h2>
+    <ul>
+      ${movieList}
+    </ul>
+    <a href="/">Back to Homepage</a>
+  `);
 });
 
 // Add Movie Route (GET to show form)
 app.get('/movies/add', (req, res) => {
-  res.render('addMovie');
+  res.send(`
+    <h2>Add New Movie</h2>
+    <form action="/movies/add" method="POST">
+      <label for="title">Title: </label>
+      <input type="text" name="title" id="title" required><br>
+      <label for="genre">Genre: </label>
+      <input type="text" name="genre" id="genre" required><br>
+      <button type="submit">Add Movie</button>
+    </form>
+    <a href="/movies">Back to Movies</a>
+  `);
 });
 
 // Add Movie Route (POST to handle form submission)
@@ -50,7 +70,17 @@ app.post('/movies/add', (req, res) => {
 app.get('/movies/edit/:id', (req, res) => {
   const movie = movies.find(m => m.id === parseInt(req.params.id));
   if (!movie) return res.status(404).send('Movie not found');
-  res.render('editMovie', { movie });
+  res.send(`
+    <h2>Edit Movie</h2>
+    <form action="/movies/edit/${movie.id}" method="POST">
+      <label for="title">Title: </label>
+      <input type="text" name="title" id="title" value="${movie.title}" required><br>
+      <label for="genre">Genre: </label>
+      <input type="text" name="genre" id="genre" value="${movie.genre}" required><br>
+      <button type="submit">Save Changes</button>
+    </form>
+    <a href="/movies">Back to Movies</a>
+  `);
 });
 
 // Edit Movie Route (POST to handle form submission)
@@ -74,6 +104,6 @@ app.get('/movies/delete/:id', (req, res) => {
 });
 
 // Start the server
-app.listen(port, '0.0.0.0', () => {
+app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
