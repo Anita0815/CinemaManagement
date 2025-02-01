@@ -1,7 +1,8 @@
 const express = require('express');
-const { Sequelize } = require('sequelize');  
+const { Sequelize, DataTypes } = require('sequelize');  
 const path = require('path');
 const dbConfig = require('./app/config/db.config');  
+
 const app = express();
 const port = 3000;
 
@@ -22,41 +23,36 @@ const sequelize = new Sequelize(
   dbConfig.PASSWORD, {
     host: dbConfig.HOST,
     dialect: dbConfig.dialect,
-    port: dbConfig.PORT
+    port: dbConfig.PORT,
+    logging: false // Disable logging for cleaner output
   }
 );
 
 // Test the database connection
 sequelize.authenticate()
-  .then(() => {
-    console.log('Database connected!');
-  })
-  .catch((error) => {
-    console.error('Unable to connect to the database:', error);
-  });
+  .then(() => console.log('✅ Database connected!'))
+  .catch((error) => console.error('❌ Unable to connect to the database:', error));
 
-// Define a Movie model (you can later replace it with your actual database schema)
+// Define a Movie model
 const Movie = sequelize.define('Movie', {
   title: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   genre: {
-    type: Sequelize.STRING,
+    type: DataTypes.STRING,
     allowNull: false,
   }
+}, {
+  timestamps: false
 });
 
 // Sync the model with the database
 sequelize.sync()
-  .then(() => {
-    console.log('Movie table has been synchronized.');
-  })
-  .catch((error) => {
-    console.error('Error syncing the Movie model:', error);
-  });
+  .then(() => console.log('✅ Movie table synchronized.'))
+  .catch((error) => console.error('❌ Error syncing the Movie model:', error));
 
-// Homepage route (Cinema Management homepage)
+// Homepage route
 app.get('/', (req, res) => {
   res.render('index', { title: 'Cinema Management' });
 });
@@ -71,26 +67,22 @@ app.get('/movies', async (req, res) => {
   }
 });
 
-// Add Movie Route (GET to show form)
+// Add Movie Route (GET)
 app.get('/movies/add', (req, res) => {
   res.render('addMovie');
 });
 
-// Add Movie Route (POST to handle form submission)
+// Add Movie Route (POST)
 app.post('/movies/add', async (req, res) => {
-  const { title, genre } = req.body;
   try {
-    const newMovie = await Movie.create({
-      title: title,
-      genre: genre
-    });
+    await Movie.create({ title: req.body.title, genre: req.body.genre });
     res.redirect('/movies');
   } catch (error) {
     res.status(500).send('Error adding movie: ' + error);
   }
 });
 
-// Edit Movie Route (GET to show form)
+// Edit Movie Route (GET)
 app.get('/movies/edit/:id', async (req, res) => {
   try {
     const movie = await Movie.findByPk(req.params.id);
@@ -101,7 +93,7 @@ app.get('/movies/edit/:id', async (req, res) => {
   }
 });
 
-// Edit Movie Route (POST to handle form submission)
+// Edit Movie Route (POST)
 app.post('/movies/edit/:id', async (req, res) => {
   try {
     const movie = await Movie.findByPk(req.params.id);
@@ -136,6 +128,6 @@ app.get('/health', (req, res) => {
 });
 
 // Start the server
-app.listen(3000, '0.0.0.0', () => {
-  console.log('Server is running at http://0.0.0.0:3000');
+app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 Server is running at http://0.0.0.0:${port}`);
 });
