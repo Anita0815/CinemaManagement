@@ -1,24 +1,25 @@
 const express = require('express');
-const path = require('path');
 const app = express();
+const path = require('path');
 const port = 3000;
 
-// Middleware: Body parser to handle form data
-app.use(express.urlencoded({ extended: true }));
-
-// Middleware: Serve static files (CSS, JS, images, etc.)
+// Middleware to serve static files (like CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Set EJS as the templating engine
-app.set('view engine', 'ejs');
+// Body parser middleware to handle form data
+app.use(express.urlencoded({ extended: true }));
 
-// Sample in-memory database
+// Set view engine to EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// In-memory database (just an array for simplicity)
 let movies = [
   { id: 1, title: 'Movie 1', genre: 'Action' },
   { id: 2, title: 'Movie 2', genre: 'Comedy' },
 ];
 
-// Homepage Route
+// Homepage route (Cinema Management homepage)
 app.get('/', (req, res) => {
   res.render('index', { title: 'Cinema Management' });
 });
@@ -28,37 +29,31 @@ app.get('/movies', (req, res) => {
   res.render('movies', { movies });
 });
 
-// Add Movie Route (GET: Show form)
+// Add Movie Route (GET to show form)
 app.get('/movies/add', (req, res) => {
-  res.render('add-movie');
+  res.render('addMovie');
 });
 
-// Add Movie Route (POST: Handle form submission)
+// Add Movie Route (POST to handle form submission)
 app.post('/movies/add', (req, res) => {
   const { title, genre } = req.body;
-  if (!title || !genre) {
-    return res.status(400).send('Title and Genre are required.');
-  }
-  
   const newMovie = {
     id: movies.length + 1,
-    title,
-    genre,
+    title: title,
+    genre: genre
   };
-
   movies.push(newMovie);
   res.redirect('/movies');
 });
 
-// Edit Movie Route (GET: Show form)
+// Edit Movie Route (GET to show form)
 app.get('/movies/edit/:id', (req, res) => {
   const movie = movies.find(m => m.id === parseInt(req.params.id));
   if (!movie) return res.status(404).send('Movie not found');
-  
-  res.render('edit-movie', { movie });
+  res.render('editMovie', { movie });
 });
 
-// Edit Movie Route (POST: Handle update)
+// Edit Movie Route (POST to handle form submission)
 app.post('/movies/edit/:id', (req, res) => {
   const movie = movies.find(m => m.id === parseInt(req.params.id));
   if (!movie) return res.status(404).send('Movie not found');
