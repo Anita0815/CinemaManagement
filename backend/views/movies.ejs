@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movies List</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Movies List</h2>
+    <ul>
+      <% movies.forEach(function(movie) { %>
+        <li>
+          <%= movie.title %> (<%= movie.genre %>)
+          - <a href="/movies/edit/<%= movie.id %>">Edit</a> |
+          <a href="/movies/delete/<%= movie.id %>">Delete</a>
+        </li>
+      <% }); %>
+    </ul>
+    <a href="/" class="back-btn">Back to Homepage</a>
+  </div>
+</body>
+</html>
