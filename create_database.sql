@@ -1,4 +1,6 @@
-CREATE DATABASE IF NOT EXISTS cinema;
+--CREATE DATABASE IF NOT EXISTS cinema;
+
+
 USE cinema;
 
 -- Create the movies table

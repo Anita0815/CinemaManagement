@@ -8,7 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // MySQL Connection Setup
 const db = mysql.createConnection({
-  host: 'localhost', // Change this if using a remote DB
+  host: 'item-manage-db.clpb39zb8nwo.us-east-1.rds.amazonaws.com', // Change this if using a remote DB
   user: 'admin',      // Your MySQL username
   password: 'admin123',      // Your MySQL password
   database: 'cinema'
